@@ -5,7 +5,7 @@ date: "2021/6/20"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, echo=FALSE,include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r echo=FALSE,message=FALSE}
@@ -20,9 +20,9 @@ happiness<-happiness%>%
   select(Country,Regional.indicator,Logged.GDP.per.capita,Social.support,Freedom.to.make.life.choices,Generosity,Perceptions.of.corruption,Healthy.life.expectancy)
 happiness_for_model<-happiness%>%
   select(Logged.GDP.per.capita,Social.support,Freedom.to.make.life.choices,Generosity,Perceptions.of.corruption,Healthy.life.expectancy)
-glimpse(happiness_for_model)
 ```
 ```{r boxplot,echo=FALSE,message=FALSE}
+#happiness_for_model are tidy data (remove outliers and missing data for all variables),happiness is original data
 sum(!complete.cases(happiness))
 sum(complete.cases(happiness))
 summary(happiness)
