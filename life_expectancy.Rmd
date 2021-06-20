@@ -8,16 +8,37 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-```{r echo=FALSE}
+```{r echo=FALSE,message=FALSE}
 library(tidyverse)
 
 ```
 
-```{r echo=FALSE,message=FALSE}
+```{r import import_select,echo=FALSE,message=FALSE}
 happiness<-read.csv("world-happiness-report-2021.csv")
 happiness$Country<-happiness$锘緾ountry.name
 happiness<-happiness%>%
   select(Country,Regional.indicator,Logged.GDP.per.capita,Social.support,Freedom.to.make.life.choices,Generosity,Perceptions.of.corruption,Healthy.life.expectancy)
-glimpse(happiness)
+happiness_for_model<-happiness%>%
+  select(Logged.GDP.per.capita,Social.support,Freedom.to.make.life.choices,Generosity,Perceptions.of.corruption,Healthy.life.expectancy)
+glimpse(happiness_for_model)
+```
+```{r boxplot,echo=FALSE,message=FALSE}
+sum(!complete.cases(happiness))
+sum(complete.cases(happiness))
+summary(happiness)
+
+# boxplot.stats(happiness$Logged.GDP.per.capita)$out
+# boxplot.stats(happiness$Social.support)$out
+# boxplot.stats(happiness$Freedom.to.make.life.choices)$out
+# boxplot.stats(happiness$Generosity)
+# boxplot.stats(happiness$Perceptions.of.corruption)
+# boxplot.stats(happiness$Healthy.life.expectancy)
+
+outlier_location <- sapply(happiness_for_model,function(X){which(X%in%boxplot.stats(X)$out)})
+todel <- (sort(unique(unlist(outlier_location))))
+happiness_for_model <- happiness_for_model[-todel,]
+summary(happiness_for_model)
+outlier_location <- sapply(happiness_for_model,function(X){which(X%in%boxplot.stats(X)$out)})
+outlier_location
 ```
 
