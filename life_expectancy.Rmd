@@ -1,0 +1,23 @@
+---
+title: "Untitled"
+author: "chengbo"
+date: "2021/6/20"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r echo=FALSE}
+library(tidyverse)
+
+```
+
+```{r echo=FALSE,message=FALSE}
+happiness<-read.csv("world-happiness-report-2021.csv")
+happiness$Country<-happiness$锘緾ountry.name
+happiness<-happiness%>%
+  select(Country,Regional.indicator,Logged.GDP.per.capita,Social.support,Freedom.to.make.life.choices,Generosity,Perceptions.of.corruption,Healthy.life.expectancy)
+glimpse(happiness)
+```
+
