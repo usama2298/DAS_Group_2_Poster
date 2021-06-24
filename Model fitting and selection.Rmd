@@ -1,0 +1,91 @@
+---
+title: "Model fitting and selection"
+author: "lingqun"
+output: pdf_document
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE, comment = NA)
+```
+```{r echo=FALSE,message=FALSE }
+library(tidyverse)
+library(ggfortify)
+library(GGally)
+library(kableExtra)
+library(moderndive)
+library(olsrr)
+```
+```{r dataset}
+happiness <- read_csv("world-happiness-report.csv")
+happiness<-happiness%>%
+  select(Ladder_score,Log_GDP_Capita,Social_support,Freedom_to_make_life_choices,Generosity,Perceptions_of_corruption,life_expectancy)
+```
+# Formal Data Analysis {#sec:FDA}
+In order to get the best-fitted regression model, a stepwise AIC regression is used to choose from all those candidate predictor variables, and the predictors are achieved when there is no variable left to enter or remove.
+```{r stepwise}
+model1 <- lm(Ladder_score~.,data = happiness)
+model.selection <- ols_step_both_aic(model1)
+stp_sum <- model.selection[1:8]%>% as_data_frame()
+knitr::kable(stp_sum, caption = '\\label{tab:reg} Stepwise Summary') %>%
+kable_styling(latex_options = 'HOLD_position')
+```
+
+Based on the stepwise method, five explanatory variables are selected to analyse the outcome, which include logged GDP per capita, social support, freedom to make life choices, corruption perception and healthy life expectancy.
+
+Therefore, a linear regression model can be fitted to analyse the happiness ladder score.
+$$\widehat{\mbox{Ladder Score}} = \widehat{\alpha} +
+\widehat{\beta}_{\mbox{GDP}} \cdot x_{\mbox{GDP}}+
+\widehat{\beta}_{\mbox{Freedom}}\cdot x_{\mbox{Freedom}}+
+\widehat{\beta}_{\mbox{SS}}\cdot x_{\mbox{SS}}+
+\widehat{\beta}_{\mbox{CP}}\cdot x_{\mbox{CP}}+
+\widehat{\beta}_{\mbox{LE}}\cdot x_{\mbox{LE}}$$
+
+where
+
+• $\widehat{\alpha}$ is the intercept;
+
+• $\widehat{\beta}_{\mbox{GDP}}$ is the coefficient for the first explanatory variable, logged GDP capital;
+
+• $\widehat{\beta}_{\mbox{Freedom}}$ is the coefficient for the second explanatory variable, freedom to make life choices;
+
+• $\widehat{\beta}_{\mbox{SS}}$ is the coefficient for the third explanatory variable, social support;
+
+• $\widehat{\beta}_{\mbox{CP}}$ is the coefficient for the fourth explanatory variable, corruption perception;
+
+• $\widehat{\beta}_{\mbox{LE}}$ is the coefficient for the fifth explanatory variable, healthy life expectancy;
+
+When the model is fitted to the data, the following estimates and confidence intervals of $\widehat{\alpha}$ (intercept) and $\widehat{\beta}$ (coefficient) are returned.
+
+```{r SLM}
+happiness <- happiness[-c(147,148,146,129,32),]
+model2 <- lm(Ladder_score~Log_GDP_Capita+Freedom_to_make_life_choices+Social_support+Perceptions_of_corruption+life_expectancy,data = happiness)
+get_regression_table(model2) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Estimate summaries from the SLR Model of Happiness Ladder Score.", 
+    booktabs = TRUE
+  )%>%
+  kable_styling(latex_options = 'HOLD_position')
+```
+
+Hence the model can be interpreted as follows:
+
+• The intercept is -1.597, positions the fitted model;
+
+• The coefficient for logged GDP capita tells that taking all other variables in the model into account and holding them constant, the happiness ladder score will increase 0.280 unit for every 1 unit increase in logged GDP per capita;
+
+• The coefficient for freedom to make life choices tells that taking all other variables in the model into account and holding them constant, the happiness ladder score will increase 2.358 unit for every 1 unit increase in freedom index;
+
+• The coefficient for social support tells that taking all other variables in the model into account and holding them constant, every 1 unit increase in social support score will lead to a 2.071 unit increase of happiness ladder score;
+
+• The coefficient for perceptions of corruption tells that taking all other variables in the model into account and holding them constant, the happiness ladder score will decrease 0.968 unit for every 1 unit increase in corruption perception score;
+
+• The coefficient for life expectancy tells that taking all other variables in the model into account and holding them constant, every 1 unit increase in healthy life expectancy will lead to a 0.026 unit increase in happiness ladder score;
+
+Before the fitted model coming into use, we must check the assumptions of the model. These are best considered in the residual plots.
+
+```{r checkplots, out.width='110%', fig.aligh='center', fig.pos='H', fig.cap='\\label{fig:check} Residuals plots for assumption checking'}
+autoplot(model2)
+```
+
+The scatterplots of residuals versus fitted values show that the points randomly scattered above and below the zero line, which indicates the residuals have mean zero and constant variance. The residuals scatters along with the diagonal line in the top right Normal Q-Q plot, which supports that the residuals are approximately constant with a normal distribution.
