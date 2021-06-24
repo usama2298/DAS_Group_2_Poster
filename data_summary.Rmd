@@ -8,5 +8,31 @@ output: pdf_document
 ```{r setup,echo=FALSE, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+```{r libraries,echo=FALSE,message=FALSE}
+library(tidyverse)
+
+```
+
+
+```{r dataimport,echo=FALSE,message=FALSE,warning=FALSE}
+happiness <- read_csv("world-happiness-report.csv")
+happiness<-happiness%>%
+  select(Regional_indicator,Ladder_score,Log_GDP_Capita,Social_support,Freedom_to_make_life_choices,Generosity,Perceptions_of_corruption,life_expectancy)
+
+```
+```{r regioncompare, echo=FALSE,fig.align = "center", fig.pos = "h",fig.cap="\\label{fig:region}Ladder Score in different regions"}
+region_summary<-happiness%>%
+  group_by(Regional_indicator)%>%
+  summarise(mean=mean(Ladder_score),count=n())
+region_summary
+```
+
+
+```{r datasummary,echo=FALSE}
+summary(happiness)
+
+```
+
+
 
 
