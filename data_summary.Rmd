@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r libraries,echo=FALSE,message=FALSE}
 library(tidyverse)
+library(kableExtra)
 
 ```
 
@@ -20,6 +21,24 @@ happiness<-happiness%>%
   select(Regional_indicator,Ladder_score,Log_GDP_Capita,Social_support,Freedom_to_make_life_choices,Generosity,Perceptions_of_corruption,life_expectancy)
 
 ```
+```{r datasummary,echo=FALSE,}
+happiness %>%
+  summarise(n=n(),Mean=round(mean(Ladder_score),digits=1), 
+    St.Dev=round(sd(Ladder_score),digits=1), Min=min(Ladder_score), 
+    Q1 = quantile(Ladder_score,0.25), Median=median(Ladder_score), 
+    Q3 = quantile(Ladder_score,0.75), Max=max(Ladder_score)) %>%
+  kable(caption = '\\label{tab:datasummary} Summary statistics on the Ladder Score of the countires.') %>%
+  kable_styling(font_size = 10, latex_options = "hold_position")
+
+```
+```{r boxplot,echo=FALSE,fig.cap="\\label{fig:boxplot}The boxplot of Ladder Score"}
+ggplot(data = happiness,mapping = aes(y=Ladder_score))+
+  geom_boxplot(fill = "steelblue") +
+  labs(y = "Ladder Score")
+```
+
+
+
 ```{r regioncompare, echo=FALSE,fig.align = "center", fig.pos = "h",fig.cap="\\label{fig:region}Ladder Score in different regions"}
 region_summary<-happiness%>%
   group_by(Regional_indicator)%>%
@@ -28,10 +47,6 @@ region_summary
 ```
 
 
-```{r datasummary,echo=FALSE}
-summary(happiness)
-
-```
 
 
 
