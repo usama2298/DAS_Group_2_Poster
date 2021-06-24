@@ -1,0 +1,12 @@
+---
+title: "data_summary"
+author: "chengbo"
+date: "2021/6/24"
+output: pdf_document
+---
+
+```{r setup,echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
