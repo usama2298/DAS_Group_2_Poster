@@ -13,7 +13,9 @@ library(tidyverse)
 library(kableExtra)
 
 ```
-
+This is a report on happiness, where the indicator of happiness is represented by ladder_score.
+The sample contains 149 countries, one of which has a very low ladder_score. In summary, the median of ladder_score is 5.534, and the average is 5.5. The standard deviation of the sample as a whole is 1.1, and the degree of dispersion of the sample is low.
+In the second table, the sample is divided into ten groups according to the region. Sub-Saharan Africa has the largest number of samples, while North America and ANZ have the smallest number of samples. In contrast, Sub-Saharan Africa has the lowest happiness, while North America and ANZ have the highest happiness. The average happiness in most regions is in the range of 5-6. According to this table, North America and ANZ and Western Europe are the happiest regions.
 
 ```{r dataimport,echo=FALSE,message=FALSE,warning=FALSE}
 happiness <- read_csv("world-happiness-report.csv")
