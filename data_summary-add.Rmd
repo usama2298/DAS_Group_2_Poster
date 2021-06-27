@@ -1,0 +1,59 @@
+---
+title: "data_summary"
+author: "chengbo, xingwu zhou"
+date: "2021/6/24"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup,echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r libraries,echo=FALSE,message=FALSE}
+library(tidyverse)
+library(kableExtra)
+
+```
+
+This is a report on happiness, where the indicator of happiness is represented by ladder_score.
+The sample contains 149 countries, one of which has a very low ladder_score. In summary, the median of ladder_score is 5.534, and the average is 5.5. The standard deviation of the sample as a whole is 1.1, and the degree of dispersion of the sample is low.
+In the second table, the sample is divided into ten groups according to the region. Sub-Saharan Africa has the largest number of samples, while North America and ANZ have the smallest number of samples. In contrast, Sub-Saharan Africa has the lowest happiness, while North America and ANZ have the highest happiness. The average happiness in most regions is in the range of 5-6. According to this table, North America and ANZ and Western Europe are the happiest regions.
+
+```{r dataimport,echo=FALSE,message=FALSE,warning=FALSE}
+happiness <- read_csv("world-happiness-report.csv")
+happiness<-happiness%>%
+  select(Regional_indicator,Ladder_score,Log_GDP_Capita,Social_support,Freedom_to_make_life_choices,Generosity,Perceptions_of_corruption,life_expectancy)
+
+```
+```{r datasummary,echo=FALSE,}
+happiness %>%
+  summarise(n=n(),Mean=round(mean(Ladder_score),digits=1), 
+    St.Dev=round(sd(Ladder_score),digits=1), Min=min(Ladder_score), 
+    Q1 = quantile(Ladder_score,0.25), Median=median(Ladder_score), 
+    Q3 = quantile(Ladder_score,0.75), Max=max(Ladder_score)) %>%
+  kable(caption = '\\label{tab:datasummary} Summary statistics on the Ladder Score of the countires.') %>%
+  kable_styling(font_size = 10, latex_options = "hold_position")
+
+```
+```{r boxplot,echo=FALSE,fig.cap="\\label{fig:boxplot}The boxplot of Ladder Score"}
+ggplot(data = happiness,mapping = aes(y=Ladder_score))+
+  geom_boxplot(fill = "steelblue") +
+  labs(y = "Ladder Score")
+```
+
+
+
+```{r regioncompare, echo=FALSE,fig.align = "center", fig.pos = "h",fig.cap="\\label{fig:region}Ladder Score in different regions"}
+region_summary<-happiness%>%
+  group_by(Regional_indicator)%>%
+  summarise(mean=mean(Ladder_score),count=n())
+region_summary
+```
+
+
+
+
+
+
