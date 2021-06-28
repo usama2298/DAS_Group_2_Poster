@@ -1,0 +1,318 @@
+---
+title: "Data Analysis"
+author: "Usama Ahmad"
+date: "27/06/2021"
+output: 
+  pdf_document:
+    number_sections: yes
+fig_caption: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, message = FALSE, warning = FALSE)
+library(ggplot2) ; library(dplyr) ; library(moderndive) ; library(tidyverse) ; library(GGally)
+library(skimr) ; library(plotly) ; library(tidyr) ; library(jtools) ; library(kableExtra)
+library(ggfortify) ; library(janitor) ; library(infer) ; library(gridExtra) ; library(olsrr)
+
+```
+
+A Quick look on the data.
+
+```{r, echo=F}
+happiness <- read_csv("world-happiness-report.csv")
+glimpse(happiness)
+```
+
+# GGpairs plot:
+
+
+```{r ggpairs1,  out.width= "85%", fig.align='center', fig.cap="\\label{fig:ggpairs1} Correlation Plot ", fig.pos= "H"}
+
+happiness %>% select(-Country_name, -Regional_indicator) %>% ggpairs()
+
+```
+
+High correlation can be seen between variables from this graph, which explains multicolinearity in data. variable selection method will be helpful for fitting a good model.
+
+
+# Summary:
+```{r Summary}
+my_skim <- skim_with(base = sfl(n = length), numeric = sfl(p0 = NULL, p100 = NULL, hist = NULL))
+happiness %>%
+  select(-Country_name, -Regional_indicator) %>%
+  my_skim() %>%
+  select(-skim_type) %>%
+  kable(col.names = c("Variable", "n", "Mean", "SD", "P25", "P50", "P75"), digits = 2) %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+Summary of data explains that values of all the variables are not much different (in good range) and good 
+
+# Scatter Plots
+
+Let's check plots, that we can make from this data.
+
+```{r Plots}
+p1 <- ggplot(happiness, aes(y = Ladder_score, x = Log_GDP_Capita)) +
+  geom_point() +
+  labs(y = "Ladder score", x = "Log of GDP per Capita") +
+  geom_smooth(method = "lm", se = F)
+p2 <- ggplot(happiness, aes(y = Ladder_score, x = Social_support)) +
+  geom_point() +
+  labs(y = "Ladder score", x = "Social Support") +
+  geom_smooth(method = "lm", se = F)
+p3 <- ggplot(happiness, aes(y = Ladder_score, x = Freedom_to_make_life_choices)) +
+  geom_point() +
+  labs(y = "Ladder score", x = "Freedom to make life choices") +
+  geom_smooth(method = "lm", se = F)
+p4 <- ggplot(happiness, aes(y = Ladder_score, x = Generosity)) +
+  geom_point() +
+  labs(y = "Ladder score", x = "Generosity") +
+  geom_smooth(method = "lm", se = F)
+p5 <- ggplot(happiness, aes(y = Ladder_score, x = Perceptions_of_corruption	)) +
+  geom_point() +
+  labs(y = "Ladder score", x = "Perceptions of corruption") +
+  geom_smooth(method = "lm", se = F)
+
+p6 <- ggplot(happiness, aes(y = life_expectancy, x = Ladder_score	)) +
+  geom_point() +
+  labs(y = "life expectancy", x = "Ladder score") +
+  geom_smooth(method = "lm", se = F, col = "red")
+
+grid.arrange(p1,p2,p3,p4,p5,p6, nrow = 2)
+
+```
+These graph explains relation of explanatory variables with response variable individually, which explains that almost all graph shows some strong effect on response variable except generosity which explains almost no changes in ladder score. some of variables have influential points, if removed can create some good changes in graph. the last graph explains the ladder scores effect on life expectancy which is moderate positive.
+
+# Model Selection
+
+let's have a look at different models ro select a good model to select
+
+## Model 1:
+
+Ladder_score ~ Log_GDP_Capita
+
+```{r Model1}
+lm1 <- lm(data=happiness, Ladder_score~Log_GDP_Capita)
+get_regression_table(lm1) %>% 
+kable(caption = "Model 1: Summary",
+      col.names = c("Variable", "Estimate", "Std Error", "T", "P value", "Lower CI", "Upper CI"),
+      digits=2) %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+## Model 2:
+
+Ladder_score ~ Log_GDP_Capita + Freedom_to_make_life_choices
+
+```{r Model2}
+lm2 <- lm(data=happiness, Ladder_score~Log_GDP_Capita + Freedom_to_make_life_choices)
+get_regression_table(lm1) %>% 
+kable(caption = "Model 2: Summary",
+      col.names = c("Variable", "Estimate", "Std Error", "T", "P value", "Lower CI", "Upper CI"),
+      digits=2) %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+## Model 3:
+
+Ladder_score ~ Log_GDP_Capita + Freedom_to_make_life_choices + Social_support 
+
+```{r Model3}
+lm3 <- lm(data=happiness, Ladder_score~Log_GDP_Capita + Freedom_to_make_life_choices +
+            Social_support)
+get_regression_table(lm3) %>% 
+kable(caption = "Model 3: Summary",
+      col.names = c("Variable", "Estimate", "Std Error", "T", "P value", "Lower CI", "Upper CI"),
+      digits=2) %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+## Model 4:
+
+Ladder_score ~ Log_GDP_Capita + Freedom_to_make_life_choices + Social_support + Perceptions_of_corruption 
+
+
+```{r Model4}
+lm4 <- lm(data=happiness, Ladder_score ~ Log_GDP_Capita + Freedom_to_make_life_choices +
+            Social_support + Perceptions_of_corruption)
+get_regression_table(lm4) %>% 
+kable(caption = "Model 4: Summary",
+      col.names = c("Variable", "Estimate", "Std Error", "T", "P value", "Lower CI", "Upper CI"),
+      digits=2) %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+## Model 5:
+
+Ladder_score ~ Log_GDP_Capita + Freedom_to_make_life_choices + Social_support + Perceptions_of_corruption + Generosity
+
+
+```{r Model5}
+lm5 <- lm(data=happiness, Ladder_score ~ Log_GDP_Capita + Freedom_to_make_life_choices +
+            Social_support + Perceptions_of_corruption + Generosity)
+get_regression_table(lm5) %>% 
+kable(caption = "Model 5: Summary",
+      col.names = c("Variable", "Estimate", "Std Error", "T", "P value", "Lower CI", "Upper CI"),
+      digits=2) %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+After fitting models with the addition of next variable, we can see that the Model 4 seems promising as it has good R square value and all the p values are explains significant effect on response variable. While in Model 5, the p-value of *Generosity* is very high and even the scatter plot above showed insignificant effect on Response variable.
+
+## Criteria for Model Selection:
+
+
+Now let's have a look at the AIC value of every model to access if our selected model is good or not.
+
+
+```{r Stepwise Selection, echo=TRUE}
+model_selection <- ols_step_both_aic(lm5, details = T) 
+```
+
+Stepwise selection gives us the same model which we have selected on the basis of p-values, by dropping *Generosity*.
+
+A brief summary of different criterion of all the fitted models:
+
+```{r}
+sum1 <- glance(lm1)[,c(1,2,8,9)]
+sum2 <- glance(lm2)[,c(1,2,8,9)]
+sum3 <- glance(lm3)[,c(1,2,8,9)]
+sum4 <- glance(lm4)[,c(1,2,8,9)]
+sum5 <- glance(lm5)[,c(1,2,8,9)]
+sum_table <- rbind(sum1,sum2,sum3,sum4,sum5) %>% mutate(Model = c(1:5)) %>% relocate(Model)
+
+sum_table %>% 
+  kable(booktabs = T, col.names = c("Model", "R2", "Adj_R2", "AIC", "BIC"), digits = 2, align = 'c') %>%
+  kable_styling(latex_options = "striped", font_size = 14) %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+According to criterion table, Model 4 and 5 have same R2 and adjusted R2, but if we look at the AIC and BIC values then model 4 has the lowest which is best model for our Data. So model 4 is the same model which we used in stepwise selection to get it.
+
+
+# Asumption check
+
+Model Equation:
+
+
+$$\widehat{\mbox{LS}} = \widehat\alpha + \widehat\beta \ \mbox{LGDP} + \widehat\gamma\ \mbox{Freedom}+ \widehat\delta\ \mbox{SS}+ \widehat\xi\ \mbox{Corruption}$$
+
+
+
+
+
+Have to write details here
+
+
+
+## Residual Plots
+
+```{r Residula Dataset}
+
+reg_tab <- get_regression_points(model = lm4, digits = 3) %>% select(-ID)
+```
+
+```{r Residual vs fitted, out.width= "85%", fig.align='center', fig.cap="\\label{fig:resid1} Residual vs fitted values", fig.pos= "H"}
+ggplot(reg_tab, aes(x = Ladder_score_hat, y = residual)) + 
+  geom_point() + 
+  labs(x = "Fitted values", y = "Residual") + 
+  geom_hline(yintercept = 0, col = "blue", size = 1) +
+  geom_smooth(method = "lm", se = F, col = "red", linetype = "dashed")
+
+```
+
+Residual vs fitted line plot shows equal spread of points around the horizontal line, which shows that mean of residuals are zero.
+
+
+
+```{r}
+ggplot(reg_tab, aes(x = residual)) +
+  geom_histogram(binwidth = 0.25, color = "white") +
+  labs(x = "Residual")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r checking outliers, eval=FALSE, include=FALSE}
+outlier_location <- sapply(happiness[,3:9],function(X){which(X%in%boxplot.stats(X)$out)})
+total <- (sort(unique(unlist(outlier_location))))
+happiness1 <- happiness[-total,]
+```
+
+```{r Plots after removing outliers, eval=FALSE, include=FALSE}
+p1_1 <- ggplot(happiness1, aes(y = Ladder_score, x = Log_GDP_Capita)) +
+  geom_point() +
+  labs(y = "Ladder score", x = "Log of GDP per Capita") +
+  geom_smooth(method = "lm", se = F)
+p2_2 <- ggplot(happiness1, aes(y = Ladder_score, x = Social_support)) +
+  geom_point() +
+  labs(y = "Ladder score", x = "Social Support") +
+  geom_smooth(method = "lm", se = F)
+p3_3 <- ggplot(happiness1, aes(y = Ladder_score, x = Freedom_to_make_life_choices)) +
+  geom_point() +
+  labs(y = "Ladder score", x = "Freedom to make life choices") +
+  geom_smooth(method = "lm", se = F)
+p4_4 <- ggplot(happiness1, aes(y = Ladder_score, x = Generosity)) +
+  geom_point() +
+  labs(y = "Ladder score", x = "Generosity") +
+  geom_smooth(method = "lm", se = F)
+p5_5 <- ggplot(happiness1, aes(y = Ladder_score, x = Perceptions_of_corruption	)) +
+  geom_point() +
+  labs(y = "Ladder score", x = "Perceptions of corruption") +
+  geom_smooth(method = "lm", se = F)
+
+p6_6 <- ggplot(happiness1, aes(y = life_expectancy, x = Ladder_score	)) +
+  geom_point() +
+  labs(y = "life expectancy", x = "Ladder score") +
+  geom_smooth(method = "lm", se = F, col = "red")
+
+grid.arrange(p1_1,p2_2,p3_3,p4_4,p5_5,p6_6, nrow = 2)
+
+```
+
