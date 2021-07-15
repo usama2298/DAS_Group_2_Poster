@@ -46,6 +46,7 @@ region_summary<-happiness%>%
   group_by(Regional_indicator)%>%
   summarise(mean=mean(Ladder_score),count=n())
 region_summary
+A = matrix(c(1,1,1),ncol=1)
 ```
 
 #test uploud
